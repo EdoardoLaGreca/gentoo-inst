@@ -1,11 +1,13 @@
 gentoo-inst.sh
 ==============
 
-My own Gentoo installation script.
+My own Gentoo installation script. Remember to edit it before running.
+
+⚠️ Work in progress, wait for the 1.0 release before using.
 
 ## Merits
 
-- It's lightweight.
+- It's short.
 - It's written in POSIX shell only.
 - It has no external dependencies.
 - It's readable.
@@ -13,8 +15,11 @@ My own Gentoo installation script.
 ## Usage
 
 ```
-curl -O https://github.com/EdoardoLaGreca/gentoo-inst.sh/raw/refs/heads/main/gentoo-inst.sh
-sudo ./gentoo-inst.sh
+curl -LO --max-redirs 3 https://github.com/EdoardoLaGreca/gentoo-inst.sh/raw/refs/heads/main/gentoo-inst.sh
+. ./gentoo-inst.sh part1
+mv gentoo-inst.sh $root/root
+chroot $root /bin/bash
+. ./gentoo-inst.sh part2
 ```
 
 ## Tweaking
