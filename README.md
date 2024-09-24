@@ -29,4 +29,4 @@ Customization options are not provided by default for several reasons including,
 
 ## License
 
-[ISC](license.md)
+[ISC](LICENSE)
