@@ -88,7 +88,10 @@ mountroot() {
 # download and install stage file
 stagefile() {
 	curl -O $stagefile
+	lastwd=$PWD
+	cd $root
 	tar xpvf stage3-*.tar.xz --xattrs-include='*.*' --numeric-owner
+	cd $lastwd
 }
 
 # don't configure compile options
