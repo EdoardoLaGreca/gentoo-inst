@@ -1,10 +1,36 @@
-#! /bin/sh
+# #! /bin/sh
 
-# TODO: wrap parts into functions and remove useless comments
-
+# disk device in which to put the gentoo installation
 diskdev='/dev/sda'
+
+# size of the swap partition in a format suitable for fdisk
 swapsize='8G'
+
+# url of the stage 3 file to install
 stagefile='https://gentoo.mirror.garr.it/releases/amd64/autobuilds/current-stage3-amd64-openrc/stage3-amd64-openrc-20240923T191858Z.tar.xz'
+
+# mirrors for portage
+mirrors="https://mirror.kumi.systems/gentoo/ \
+http://mirror.kumi.systems/gentoo/ \
+rsync://mirror.kumi.systems/gentoo/ \
+https://ftp.uni-stuttgart.de/gentoo-distfiles/ \
+http://ftp.uni-stuttgart.de/gentoo-distfiles/ \
+ftp://ftp.uni-stuttgart.de/gentoo-distfiles/ \
+https://gentoo.mirror.garr.it/ \
+http://gentoo.mirror.garr.it/ \
+https://mirror.init7.net/gentoo/ \
+http://mirror.init7.net/gentoo/ \
+rsync://mirror.init7.net/gentoo/"
+
+# timezone
+timezone='Europe/Rome'
+
+# locales
+locales='en_GB.UTF-8 UTF-8
+en_US.UTF-8 UTF-8
+it_IT.UTF-8 UTF-8'
+
+# -- START FUNCTIONS -- #
 
 # check root access
 rootok() {
@@ -61,15 +87,16 @@ t
 19
 t
 3
-t
-3
 23
 w
 "
-	echo $partinfo | fdisk $diskdev
+	# delete the partition table header to make sure that fdisk does not
+	# prompt for any confirmation
+	dd if=/dev/zero of=$diskdev bs=1K count=8 status=progress
+	echo $partinfo | fdisk $diskdev -w always -W always
 }
 
-# create filesystems
+# create filesystems and activate swap
 mkfsys() {
 	mkfs.vfat -F 32 $esp
 	mkswap $swap
@@ -82,7 +109,6 @@ mountroot() {
 	mkdir -p $root
 	mount $rootfs $root
 	mkdir -p $root/efi
-	mount $esp $root/efi
 }
 
 # download and install stage file
@@ -94,35 +120,113 @@ stagefile() {
 	cd $lastwd
 }
 
-# don't configure compile options
+# configure compile options
 compileopts() {
+	# don't
 }
 
-# chroot
-chroot() {
+# pre-chroot
+prechroot() {
 	cp --dereference /etc/resolv.conf /mnt/gentoo/etc/
 	mount --types proc /proc $root/proc
 	mount --rbind /sys $root/sys
 	mount --rbind /dev $root/dev
 	mount --bind /run $root/run
-	chroot $root /bin/bash
-	# TODO: add
 }
 
-rootok
-connok
-diskok
-mkparts
+# post-chroot
+postchroot() {
+	. /etc/profile
+	PS1="(chroot) $PS1"
+	export PS1
+	mount $esp /efi
+}
 
-esp="${diskdev}1"
-swap="${diskdev}2"
-rootfs="${diskdev}3"
+# configure portage
+confptg() {
+	until emerge --sync --quiet
+	do
+		printf 'failed to sync emerge, retry? (Y/n) '
+		read ans
+		echo $ans | egrep -i '^no?$' >/dev/null
+		if [ $? -eq 0 ]
+		then
+			break
+		fi
+	done
 
-mkfsys
+	echo "GENTOO_MIRRORS=\"$mirrors\"" >>/etc/portage/make.conf
+	# skip news reading
+	# skip profile selection
+	# skip binary package host
+	# skip USE variable configuration, including CPU_FLAGS_* and VIDEO_CARDS
+	# skip ACCEPT_LICENSE variable configuration
+	# skip @world set updating
+	echo 'sys-kernel/linux-firmware linux-fw-redistributable' >>/etc/portage/package.license/kernel
+}
 
-root='/mnt/gentoo'
+# set timezone
+settz() {
+	echo "$timezone" >/etc/timezone
+	emerge --config sys-libs/timezone-data
+}
 
-mountroot
-stagefile
-compileopts
-chroot
+# configure locales
+setlocales() {
+	echo "$locales" >/etc/locale.gen
+	locale-gen
+	echo "LANG=\"`echo "$locales" | head -n 1 | awk '{print $1}'`\"" >>/etc/env.d/02locale
+	echo "LC_COLLATE=\"C.UTF-8\"" >>/etc/env.d/02locale
+}
+
+# download and install firmware
+dlfw() {
+	emerge sys-kernel/linux-firmware
+}
+
+# sys-kernel/installkernel
+instkern() {
+	echo 'sys-kernel/installkernel grub' >>/etc/portage/package.use/installkernel
+	echo 'sys-kernel/installkernel dracut' >>/etc/portage/package.use/installkernel
+
+	emerge sys-kernel/installkernel
+}
+
+# -- END FUNCTIONS -- #
+
+# part 1: before chroot
+part1() {
+	rootok
+	connok
+	diskok
+	mkparts
+
+	esp="${diskdev}1"
+	swap="${diskdev}2"
+	rootfs="${diskdev}3"
+
+	mkfsys
+
+	root='/mnt/gentoo'
+
+	mountroot
+	stagefile
+	compileopts
+	prechroot
+}
+
+#chroot $root /bin/bash
+
+# part 2: after chroot
+part2() {
+	# define variables again in new shell
+	esp="${diskdev}1"
+
+	postchroot
+	confptg
+	settz
+	setlocales
+	dlfw
+}
+
+$1
