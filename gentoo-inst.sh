@@ -25,7 +25,7 @@ rsync://mirror.init7.net/gentoo/"
 # timezone
 timezone='Europe/Rome'
 
-# locales
+# locales (the first is used as system language)
 locales='en_GB.UTF-8 UTF-8
 en_US.UTF-8 UTF-8
 it_IT.UTF-8 UTF-8'
@@ -184,12 +184,17 @@ dlfw() {
 	emerge sys-kernel/linux-firmware
 }
 
-# sys-kernel/installkernel
-instkern() {
+# kernel configuration and compilation
+kernconf() {
 	echo 'sys-kernel/installkernel grub' >>/etc/portage/package.use/installkernel
 	echo 'sys-kernel/installkernel dracut' >>/etc/portage/package.use/installkernel
-
 	emerge sys-kernel/installkernel
+
+	# use distribution kernel (don't )
+	emerge sys-kernel/gentoo-kernel
+	# skip signing (both kernel modules and kernel image)
+	# TODO: continue here (32.1.5 "Post-install/upgrade tasks")
+
 }
 
 # -- END FUNCTIONS -- #
@@ -227,6 +232,7 @@ part2() {
 	settz
 	setlocales
 	dlfw
+	kernconf
 }
 
 $1
