@@ -22,6 +22,12 @@ chroot $root /bin/bash
 . ./gentoo-inst.sh part2
 ```
 
+There is also a text file called "pkgs" which contains a list of packages that I usually install right after the operating system installation. The packages are separated by line breaks and they can be fed into emerge like this:
+
+```
+emerge `cat pkgs | tr '\n' ' '`
+```
+
 ## Tweaking
 
 Commands are grouped into functions and the script is meant to be understandable and easy to edit. If you want to customize your Gentoo installation, the only way is to edit the script.
