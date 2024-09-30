@@ -45,7 +45,7 @@ rootok() {
 # check connection
 connok() {
 	ping -c 3 1.1.1.1 >/dev/null
-	if [ $? -eq 0 ]
+	if [ $? -ne 0 ]
 	then
 		echo 'no internet connection' >&2
 		exit 1
@@ -190,11 +190,24 @@ kernconf() {
 	echo 'sys-kernel/installkernel dracut' >>/etc/portage/package.use/installkernel
 	emerge sys-kernel/installkernel
 
-	# use distribution kernel (don't )
-	emerge sys-kernel/gentoo-kernel
+	# use distribution kernel
+	emerge sys-kernel/gentoo-kernel-bin
 	# skip signing (both kernel modules and kernel image)
-	# TODO: continue here (32.1.5 "Post-install/upgrade tasks")
 
+	# add dist-kernel USE flag if it's not present
+	makeconf='/etc/portage/make.conf'
+	flag='dist-kernel'
+	oldusefull=`egrep -o "^USE=(\"|')[^[:cntrl:]]*(\"|')" $makeconf`
+	olduse=`echo $oldusefull | sed "s/^USE=//;s/'//g;s/\"//g"`
+	newuse="$olduse $flag"
+	newusefull="USE=\"$newuse\""
+	if ! egrep '^USE=' $makeconf
+	then
+		# global USE var is undefined
+		printf "\nUSE=\"$flag\"\n" >>$makeconf
+	else
+		sed "s/$oldusefull/$newusefull/g"
+	fi
 }
 
 # -- END FUNCTIONS -- #
