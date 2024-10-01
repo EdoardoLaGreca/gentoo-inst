@@ -206,8 +206,28 @@ kernconf() {
 		# global USE var is undefined
 		printf "\nUSE=\"$flag\"\n" >>$makeconf
 	else
-		sed "s/$oldusefull/$newusefull/g"
+		sed -i "s/$oldusefull/$newusefull/g" $makeconf
 	fi
+}
+
+# fill /etc/fstab
+fstabconf() {
+	# add /efi
+	uuid=`blkid | grep "^$esp:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//'`
+	printf "UUID=$uuid\t/efi\tvfat\tumask=0077\t0 2" >> /etc/fstab
+
+	# add swap
+	uuid=`blkid | grep "^$swap:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//'`
+	printf "UUID=$uuid\tnone\tswap\tsw\t0 0" >> /etc/fstab
+
+	# add /
+	uuid=`blkid | grep "^$rootfs:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//`
+	printf "UUID=$uuid\t/\text4\tdefaults\t0 1\n" >>/etc/fstab
+}
+
+# configure networking
+netconf() {
+	echo edo-pc >/etc/hostname
 }
 
 # -- END FUNCTIONS -- #
@@ -239,6 +259,8 @@ part1() {
 part2() {
 	# define variables again in new shell
 	esp="${diskdev}1"
+	swap="${diskdev}2"
+	rootfs="${diskdev}3"
 
 	postchroot
 	confptg
@@ -246,6 +268,7 @@ part2() {
 	setlocales
 	dlfw
 	kernconf
+	fstabconf
 }
 
 $1
