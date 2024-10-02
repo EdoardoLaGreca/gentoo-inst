@@ -156,6 +156,7 @@ stagefile() {
 # configure compile options
 compileopts() {
 	# don't
+	:
 }
 
 # pre-chroot
