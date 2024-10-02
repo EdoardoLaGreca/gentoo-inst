@@ -1,5 +1,3 @@
-# #! /bin/sh
-
 # disk device in which to put the gentoo installation
 diskdev='/dev/sda'
 
