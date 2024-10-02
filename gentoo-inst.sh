@@ -48,7 +48,7 @@ mergeuse() {
 		echo "USE=\"\"" >>$makeconf
 	fi
 
-	oldusefull=`egrep -o "^USE=(\"|')[^[:cntrl:]]*(\"|')" $makeconf`
+	oldusefull=`emerge --info | egrep -o "^USE=(\"|')[^[:cntrl:]]*(\"|')"`
 	olduse=`echo $oldusefull | sed "s/^USE=//;s/'//g;s/\"//g"`
 	match=`echo "$olduse" | egrep -o "(^|[[:space:]])(-|+)?$flag([[:space:]]|$)"`
 
