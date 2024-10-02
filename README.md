@@ -51,6 +51,8 @@ connok
 mountroot
 ```
 
+There is a little caveat, though. All functions read values from external variables instead of requiring the caller to pass those values as arguments. This might be fixed in future but for now all the necessary external variables are initialized right before calling any function. <!-- TODO -->
+
 ### Installing additional packages
 
 There is also a text file called "pkgs" which contains a list of packages that I usually install right after the operating system installation. The packages are separated by line breaks and they can be fed into emerge like this:
