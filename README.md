@@ -5,6 +5,10 @@ My own Gentoo installation script. Remember to edit it before running.
 
 ⚠️ Work in progress, wait for the 1.0 release before using.
 
+## Rationale
+
+Gentoo is a nice Linux distribution but typing all the commands every time you need to install it is boring and error-prone. Instead of using a script made by someone else, which needs to be firstly understood, secondly checked for errors, and thirdly adapted to one's will, it is faster to write a new script from the ground up. Not only that, writing a Gentoo installation script from scratch is more educational, compared to changing an existing one.
+
 ## Merits
 
 - It's short.
