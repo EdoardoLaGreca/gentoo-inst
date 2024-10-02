@@ -139,16 +139,16 @@ mkfsys() {
 
 # mount root
 mountroot() {
-	mkdir -p $root
-	mount $rootfs $root
-	mkdir -p $root/efi
+	mkdir -p $rootdir
+	mount $rootfs $rootdir
+	mkdir -p $rootdir/efi
 }
 
 # download and install stage file
 stagefile() {
 	curl -O $stagefile
 	lastwd=$PWD
-	cd $root
+	cd $rootdir
 	tar xpvf stage3-*.tar.xz --xattrs-include='*.*' --numeric-owner
 	cd $lastwd
 }
@@ -161,10 +161,10 @@ compileopts() {
 # pre-chroot
 prechroot() {
 	cp --dereference /etc/resolv.conf /mnt/gentoo/etc/
-	mount --types proc /proc $root/proc
-	mount --rbind /sys $root/sys
-	mount --rbind /dev $root/dev
-	mount --bind /run $root/run
+	mount --types proc /proc $rootdir/proc
+	mount --rbind /sys $rootdir/sys
+	mount --rbind /dev $rootdir/dev
+	mount --bind /run $rootdir/run
 }
 
 # post-chroot
@@ -259,30 +259,17 @@ part1() {
 	connok
 	diskok
 	mkparts
-
-	esp="${diskdev}1"
-	swap="${diskdev}2"
-	rootfs="${diskdev}3"
-
 	mkfsys
-
-	root='/mnt/gentoo'
-
 	mountroot
 	stagefile
 	compileopts
 	prechroot
 }
 
-#chroot $root /bin/bash
+#chroot $rootdir /bin/bash
 
 # part 2: after chroot
 part2() {
-	# define variables again in new shell
-	esp="${diskdev}1"
-	swap="${diskdev}2"
-	rootfs="${diskdev}3"
-
 	postchroot
 	confptg
 	settz
@@ -292,5 +279,12 @@ part2() {
 	fstabconf
 	netconf
 }
+
+esp="${diskdev}1"
+swap="${diskdev}2"
+rootfs="${diskdev}3"
+
+# for part1
+rootdir='/mnt/gentoo'
 
 $1
