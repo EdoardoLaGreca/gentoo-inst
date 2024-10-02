@@ -30,6 +30,41 @@ it_IT.UTF-8 UTF-8'
 
 # -- START FUNCTIONS -- #
 
+# merge the current USE flags with another USE flag
+# e.g.: mergeuse -kde (disables the kde USE flag)
+# e.g.: mergeuse networkmanager (enables the networkmanager USE flag)
+# if the given flag was not present, add it
+# if the given flag is already present and has opposite mode (enabled or disabled), invert the mode
+# if the given flag is already present and has the same mode (enabled or disabled), do nothing
+# if the USE variable is not defined, define it with the given flag
+mergeuse() {
+	makeconf='/etc/portage/make.conf'
+	flag="$1"
+	mode=`echo $flag | egrep -o '^-?'`
+	flag=`echo $flag | sed "s/^$mode//"`
+
+	if ! egrep '^USE=' $makeconf
+	then
+		echo "USE=\"\"" >>$makeconf
+	fi
+
+	oldusefull=`egrep -o "^USE=(\"|')[^[:cntrl:]]*(\"|')" $makeconf`
+	olduse=`echo $oldusefull | sed "s/^USE=//;s/'//g;s/\"//g"`
+	match=`echo "$olduse" | egrep -o "(^|[[:space:]])(-|+)?$flag([[:space:]]|$)"`
+
+	if [ -z "$match" ]
+	then
+		newuse="$olduse $mode$flag"
+	else
+		newuse=`echo $olduse | sed "s/$match/$mode$flag/`
+	fi
+
+	newusefull="USE=\"$newuse\""
+	sed -i "s/$oldusefull/$newusefull/" $makeconf
+}
+
+# -- ABOVE: INTERNAL FUNCTIONS -- #
+
 # check root access
 rootok() {
 	uid=`id -u`
@@ -192,20 +227,8 @@ kernconf() {
 	emerge sys-kernel/gentoo-kernel-bin
 	# skip signing (both kernel modules and kernel image)
 
-	# add dist-kernel USE flag if it's not present
-	makeconf='/etc/portage/make.conf'
-	flag='dist-kernel'
-	oldusefull=`egrep -o "^USE=(\"|')[^[:cntrl:]]*(\"|')" $makeconf`
-	olduse=`echo $oldusefull | sed "s/^USE=//;s/'//g;s/\"//g"`
-	newuse="$olduse $flag"
-	newusefull="USE=\"$newuse\""
-	if ! egrep '^USE=' $makeconf
-	then
-		# global USE var is undefined
-		printf "\nUSE=\"$flag\"\n" >>$makeconf
-	else
-		sed -i "s/$oldusefull/$newusefull/g" $makeconf
-	fi
+	# add dist-kernel USE flag
+	mergeuse 'dist-kernel'
 }
 
 # fill /etc/fstab
