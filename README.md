@@ -13,7 +13,7 @@ Gentoo is a nice Linux distribution but typing all the commands every time you n
 
 - It's short.
 - It's written in POSIX shell only.
-- It has no external dependencies.
+- It has no external dependencies, other than the preinstalled utilities.
 - It's readable.
 
 ## Usage
