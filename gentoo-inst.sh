@@ -290,6 +290,7 @@ part2() {
 	dlfw
 	kernconf
 	fstabconf
+	netconf
 }
 
 $1
