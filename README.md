@@ -27,10 +27,12 @@ The script is made to be sourced so it lacks a shebang line at the beginning. Ho
 ```
 curl -LO --max-redirs 3 https://github.com/EdoardoLaGreca/gentoo-inst.sh/raw/refs/heads/main/gentoo-inst.sh
 ./gentoo-inst.sh part1
-mv gentoo-inst.sh $root/root
-chroot $root /bin/bash
+mv gentoo-inst.sh /mnt/gentoo
+chroot /mnt/gentoo /bin/bash
 ./gentoo-inst.sh part2
 ```
+
+The new root directory, in this case  `/mnt/gentoo`, must be the same as the directoty specified by the `rootdir` variable in the installation script.
 
 ### Granular running and script sourcing
 
