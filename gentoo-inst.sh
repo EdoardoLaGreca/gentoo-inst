@@ -250,6 +250,11 @@ fstabconf() {
 # configure networking
 netconf() {
 	echo edo-pc >/etc/hostname
+
+	# use dhcpcd instead of netifrc
+	emerge net-misc/dhcpcd
+	rc-update add dhcpcd default
+	rc-service dhcpcd start
 }
 
 # -- END FUNCTIONS -- #
