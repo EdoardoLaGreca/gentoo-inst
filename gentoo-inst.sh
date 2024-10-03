@@ -257,6 +257,11 @@ netconf() {
 	rc-service dhcpcd start
 }
 
+# prompt for a new root password
+rootpw() {
+	# passwd
+}
+
 # -- END FUNCTIONS -- #
 
 # part 1: before chroot
@@ -284,6 +289,7 @@ part2() {
 	kernconf
 	fstabconf
 	netconf
+	rootpw
 }
 
 esp="${diskdev}1"
