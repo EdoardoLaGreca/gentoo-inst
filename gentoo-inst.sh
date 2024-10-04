@@ -145,7 +145,7 @@ mountroot() {
 }
 
 # download and install stage file
-stagefile() {
+inststagefile() {
 	curl -O $stagefile
 	lastwd=$PWD
 	cd $rootdir
@@ -260,6 +260,89 @@ netconf() {
 # prompt for a new root password
 rootpw() {
 	# passwd
+	:
+}
+
+# set up OpenRC
+openrcconf() {
+	# /etc/rc.conf
+	if [ -f ./rc.conf ]
+	then
+		if ! diff ./rc.conf /etc/rc.conf
+		then
+			mv /etc/rc.conf /etc/rc.conf.bk
+			cp ./rc.conf /etc
+		else
+			echo 'the new ./rc.conf and the old /etc/rc.conf files are identical' >&2
+		fi
+	else
+		echo 'rc.conf does not exist or it's not a regular file, failed to set up OpenRC' >&2
+	fi
+
+	# /etc/conf.d/hwclock
+	#sed -i 's/#*clock=.*/clock="local"/' /etc/conf.d/hwclock
+}
+
+# set up a system logger
+syslogger() {
+	emerge app-admin/sysklogd
+	rc-update add sysklogd default
+}
+
+# install a cron daemon
+crondmon() {
+	emerge sys-process/cronie
+	rc-update add cronie default
+}
+
+# add file indexing
+fileindexing() {
+	emerge sys-apps/mlocate
+}
+
+# enable the SSH daemon
+sshdmon() {
+	#rc-update add sshd default
+	:
+}
+
+# add Bash completions
+bashcompl() {
+	#emerge app-shells/bash-completion
+	:
+}
+
+# add time synchronization
+timesync() {
+	emerge net-misc/chrony
+	rc-update add chronyd default
+}
+
+# install the filesystem tools
+fstools() {
+	# already installed for ext4 as part of @world
+	#emerge sys-fs/e2fsprogs
+}
+
+# install networking tools
+nettools() {
+	# dhcpcd was already installed in netconf
+	#emerge net-misc/dhcpcd
+	emerge net-wireless/iw net-wireless/wpa_supplicant
+}
+
+# add a bootloader
+bootld() {
+	# set GRUB_PLATFORMS anyway to ensure compatibility with UEFI
+	echo 'GRUB_PLATFORMS="efi-64"' >>/etc/portage/make.conf
+	emerge --verbose sys-boot/grub
+
+	# make sure that the EFI system partition is mounted before installing
+	mkdir -p /efi
+	mount $esp /efi
+
+	grub-install --efi-directory=/efi
+	grub-mkconfig -o /boot/grub/grub.cfg
 }
 
 # -- END FUNCTIONS -- #
@@ -272,7 +355,7 @@ part1() {
 	mkparts
 	mkfsys
 	mountroot
-	stagefile
+	inststagefile
 	compileopts
 	prechroot
 }
@@ -290,8 +373,19 @@ part2() {
 	fstabconf
 	netconf
 	rootpw
+	openrcconf
+	syslogger
+	crondmon
+	fileindexing
+	sshdmon
+	bashcompl
+	timesync
+	fstools
+	nettools
+	bootld
 }
 
+# disk partitions
 esp="${diskdev}1"
 swap="${diskdev}2"
 rootfs="${diskdev}3"
