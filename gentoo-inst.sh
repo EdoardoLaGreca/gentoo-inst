@@ -97,7 +97,7 @@ diskok() {
 	fi
 }
 
-# partition disk (TODO: does creating a new disk label erase all partitions, even if it is the same disk label type?)
+# partition disk
 mkparts() {
 	partinfo="g
 n
