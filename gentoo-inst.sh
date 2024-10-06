@@ -164,6 +164,10 @@ mountroot() {
 # download and install stage file
 inststagefile() {
 	curl -O $stagefile
+	if [ $? -ne 0 ]
+	then
+		echo 'failed to download stage file' >&2
+	fi
 	lastwd=$PWD
 	cd $rootdir
 	tar xpvf stage3-*.tar.xz --xattrs-include='*.*' --numeric-owner
