@@ -1,3 +1,8 @@
+# gentoo-inst.sh - Install Gentoo.
+# Use this script to automate and speed-up the Gentoo installation process.
+# Remember to change the default values, if necessary, and to check whether the
+# stage 3 file still exists using the urlok function.
+
 # disk device in which to put the gentoo installation
 diskdev='/dev/sda'
 
@@ -28,7 +33,7 @@ locales='en_GB.UTF-8 UTF-8
 en_US.UTF-8 UTF-8
 it_IT.UTF-8 UTF-8'
 
-# -- START FUNCTIONS -- #
+# -- BEGIN INTERNAL FUNCTIONS -- #
 
 # merge the current USE flags with another USE flag
 # e.g.: mergeuse -kde (disables the kde USE flag)
@@ -63,7 +68,19 @@ mergeuse() {
 	sed -i "s/$oldusefull/$newusefull/" $makeconf
 }
 
-# -- ABOVE: INTERNAL FUNCTIONS -- #
+# -- END INTERNAL FUNCTIONS -- #
+# -- BEGIN UTILITY FUNCTIONS -- #
+
+# check whether an http(s) url points to an existing resource
+urlok() {
+	url="$1"
+	sc=`curl -sI "$url" | grep HTTP | awk '{ print $2 }'`
+	( echo "$sc" | egrep '^2[[:digit:]]{2}' ) && return 0
+	return 1
+}
+
+# -- END UTILITY FUNCTIONS -- #
+# -- BEGIN STEP FUNCTIONS -- #
 
 # check root access
 rootok() {
@@ -345,7 +362,7 @@ bootld() {
 	grub-mkconfig -o /boot/grub/grub.cfg
 }
 
-# -- END FUNCTIONS -- #
+# -- END STEP FUNCTIONS -- #
 
 # part 1: before chroot
 part1() {
