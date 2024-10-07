@@ -256,15 +256,15 @@ kernconf() {
 # fill /etc/fstab
 fstabconf() {
 	# add /efi
-	uuid=`blkid | grep "^$esp:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//'`
+	uuid=`blkid | grep "^$esp:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//"`
 	printf "UUID=$uuid\t/efi\tvfat\tumask=0077\t0 2" >> /etc/fstab
 
 	# add swap
-	uuid=`blkid | grep "^$swap:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//'`
+	uuid=`blkid | grep "^$swap:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//"`
 	printf "UUID=$uuid\tnone\tswap\tsw\t0 0" >> /etc/fstab
 
 	# add /
-	uuid=`blkid | grep "^$rootfs:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//`
+	uuid=`blkid | grep "^$rootfs:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//"`
 	printf "UUID=$uuid\t/\text4\tdefaults\t0 1\n" >>/etc/fstab
 }
 
@@ -297,7 +297,7 @@ openrcconf() {
 			echo 'the new ./rc.conf and the old /etc/rc.conf files are identical' >&2
 		fi
 	else
-		echo 'rc.conf does not exist or it's not a regular file, failed to set up OpenRC' >&2
+		echo 'rc.conf does not exist or it is not a regular file, failed to set up OpenRC' >&2
 	fi
 
 	# /etc/conf.d/hwclock
