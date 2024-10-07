@@ -343,6 +343,7 @@ timesync() {
 fstools() {
 	# already installed for ext4 as part of @world
 	#emerge sys-fs/e2fsprogs
+	:
 }
 
 # install networking tools
