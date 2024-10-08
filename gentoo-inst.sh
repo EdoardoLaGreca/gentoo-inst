@@ -114,7 +114,8 @@ diskok() {
 
 # partition disk
 mkparts() {
-	partinfo="g
+	partinfo="o
+g
 n
 1
 
@@ -138,10 +139,7 @@ t
 23
 w
 "
-	# delete the partition table header to make sure that fdisk does not
-	# prompt for any confirmation
-	dd if=/dev/zero of=$diskdev bs=1K count=8 status=progress
-	echo $partinfo | fdisk $diskdev -w always -W always
+	echo "$partinfo" | fdisk $diskdev -w always -W always
 	if [ $? -ne 0 ]
 	then
 		echo 'an error occurred while partitioning the disk' >&2
