@@ -77,8 +77,8 @@ mergeuse() {
 # compose the latest stage 3 file's url
 stageurl() {
 	baseurl="https://${stagemirr}/releases/amd64/autobuilds"
-	innerpath=`curl "${baseurl}/latest-${stagetype}.txt" | grep -m 1 "$stagetype" | awk '{ print $1 }'`
-	printf "${baseurl}/${innerpath}"
+	innerpath=`curl -Ss "${baseurl}/latest-${stagetype}.txt" | grep -m 1 "$stagetype" | awk '{ print $1 }'`
+	echo "${baseurl}/${innerpath}"
 }
 
 # check whether an http(s) url points to an existing resource
