@@ -263,6 +263,8 @@ confptg() {
 	# skip USE variable configuration, including CPU_FLAGS_* and VIDEO_CARDS
 	# skip ACCEPT_LICENSE variable configuration
 	# skip @world set updating
+	mkdir -p /etc/portage/package.license
+	touch /etc/portage/package.license/kernel
 	echo 'sys-kernel/linux-firmware linux-fw-redistributable' >>/etc/portage/package.license/kernel
 }
 
