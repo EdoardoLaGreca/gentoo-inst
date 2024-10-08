@@ -30,14 +30,14 @@ It is also recommended to check whether the specified stage file exists. This ca
 
 ```sh
 curl -LO --max-redirs 3 https://github.com/EdoardoLaGreca/gentoo-inst.sh/raw/refs/heads/main/gentoo-inst.sh
-vi gentoo-inst.sh # edit default values
+vi gentoo-inst.sh		# edit default values
 urlok `stageurl`
 ./gentoo-inst.sh part1 2>err.log
-less err.log # any error?
+less err.log			# any error?
 mv gentoo-inst.sh /mnt/gentoo
 chroot /mnt/gentoo /bin/bash
 ./gentoo-inst.sh part2 2>err.log
-less err.log # any error?
+less err.log			# any error?
 exit
 umount -R /mnt/gentoo
 reboot
