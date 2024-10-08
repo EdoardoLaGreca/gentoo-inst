@@ -9,8 +9,11 @@ diskdev='/dev/sda'
 # size of the swap partition in a format suitable for fdisk
 swapsize='8G'
 
-# url of the stage 3 file to install
-stagefile='https://gentoo.mirror.garr.it/releases/amd64/autobuilds/current-stage3-amd64-openrc/stage3-amd64-openrc-20240923T191858Z.tar.xz'
+# mirror of the stage 3 file (https only)
+stagemirr='gentoo.mirror.garr.it'
+
+# type of the stage 3 file (i.e. file name without extension, date, or time)
+stagetype='stage3-amd64-openrc'
 
 # mirrors for portage
 mirrors="https://mirror.kumi.systems/gentoo/ \
@@ -66,6 +69,13 @@ mergeuse() {
 
 	newusefull="USE=\"$newuse\""
 	sed -i "s/$oldusefull/$newusefull/" $makeconf
+}
+
+# compose the latest stage 3 file's url
+stageurl() {
+	baseurl="https://${stagemirr}/releases/amd64/autobuilds"
+	innerpath=`curl "${baseurl}/latest-${stagetype}.txt" | grep -m 1 stage3 | awk '{ print $1 }'`
+	printf "${baseurl}/${innerpath}"
 }
 
 # -- END INTERNAL FUNCTIONS -- #
