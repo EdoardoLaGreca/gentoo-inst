@@ -190,17 +190,20 @@ mountroot() {
 
 # download and install stage file
 inststagefile() {
-	curl -O `stageurl`
+	url=`stageurl`
+	curl -O $url
 	if [ $? -ne 0 ]
 	then
 		echo 'failed to download stage file' >&2
 		return 1
 	fi
-	lastwd=$PWD
+	stagefile=`basename $url`
+	mv $stagefile $rootdir
+	wd=$PWD
 	cd $rootdir
-	tar xpvf stage3-*.tar.xz --xattrs-include='*.*' --numeric-owner
+	tar xpvf $stagefile --xattrs-include='*.*' --numeric-owner
 	e=$?
-	cd $lastwd
+	cd $wd
 	if [ $e -ne 0 ]
 	then
 		echo 'failed to extract stage file' >&2
