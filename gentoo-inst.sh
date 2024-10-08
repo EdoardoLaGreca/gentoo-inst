@@ -71,15 +71,15 @@ mergeuse() {
 	sed -i "s/$oldusefull/$newusefull/" $makeconf
 }
 
+# -- END INTERNAL FUNCTIONS -- #
+# -- BEGIN UTILITY FUNCTIONS -- #
+
 # compose the latest stage 3 file's url
 stageurl() {
 	baseurl="https://${stagemirr}/releases/amd64/autobuilds"
-	innerpath=`curl "${baseurl}/latest-${stagetype}.txt" | grep -m 1 stage3 | awk '{ print $1 }'`
+	innerpath=`curl "${baseurl}/latest-${stagetype}.txt" | grep -m 1 "$stagetype" | awk '{ print $1 }'`
 	printf "${baseurl}/${innerpath}"
 }
-
-# -- END INTERNAL FUNCTIONS -- #
-# -- BEGIN UTILITY FUNCTIONS -- #
 
 # check whether an http(s) url points to an existing resource
 urlok() {
@@ -190,7 +190,7 @@ mountroot() {
 
 # download and install stage file
 inststagefile() {
-	curl -O $stagefile
+	curl -O `stageurl`
 	if [ $? -ne 0 ]
 	then
 		echo 'failed to download stage file' >&2
