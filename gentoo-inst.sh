@@ -75,8 +75,7 @@ mergeuse() {
 urlok() {
 	url="$1"
 	sc=`curl -sI "$url" | grep HTTP | awk '{ print $2 }'`
-	( echo "$sc" | egrep '^2[[:digit:]]{2}' ) && return 0
-	return 1
+	echo "$sc" | egrep '^2[[:digit:]]{2}'
 }
 
 # -- END UTILITY FUNCTIONS -- #
@@ -88,17 +87,16 @@ rootok() {
 	if [ $uid -ne 0 ]
 	then
 		echo 'run as root' >&2
-		exit 1
+		return 1
 	fi
 }
 
 # check connection
 connok() {
-	ping -c 3 1.1.1.1 >/dev/null
-	if [ $? -ne 0 ]
+	if ! ping -c 3 1.1.1.1 >/dev/null
 	then
 		echo 'no internet connection' >&2
-		exit 1
+		return 1
 	fi
 }
 
@@ -107,10 +105,10 @@ diskok() {
 	printf "is $diskdev the correct disk? (y/N) "
 	read ans
 	echo $ans | egrep -i '^y(es)?$' >/dev/null
-	if [ $? -eq 0 ]
+	if [ $? -ne 0 ]
 	then
-		echo 'installation aborted' >&2
-		exit 1
+		echo "$diskdev is incorrect" >&2
+		return 1
 	fi
 }
 
@@ -144,14 +142,35 @@ w
 	# prompt for any confirmation
 	dd if=/dev/zero of=$diskdev bs=1K count=8 status=progress
 	echo $partinfo | fdisk $diskdev -w always -W always
+	if [ $? -ne 0 ]
+	then
+		echo 'an error occurred while partitioning the disk' >&2
+		return 1
+	fi
 }
 
 # create filesystems and activate swap
 mkfsys() {
+	e=0
+
 	mkfs.vfat -F 32 $esp
+	test $? -ne 0 && e=1
+
 	mkswap $swap
+	test $? -ne 0 && e=1
+
 	swapon $swap
+	test $? -ne 0 && e=1
+
 	mkfs.ext4 $rootfs
+	test $? -ne 0 && e=1
+
+	if [ $e -ne 0 ]
+	then
+		echo 'could not create filesystem for one or more partitions' >&2
+	fi
+
+	return $e
 }
 
 # mount root
@@ -167,11 +186,18 @@ inststagefile() {
 	if [ $? -ne 0 ]
 	then
 		echo 'failed to download stage file' >&2
+		return 1
 	fi
 	lastwd=$PWD
 	cd $rootdir
 	tar xpvf stage3-*.tar.xz --xattrs-include='*.*' --numeric-owner
+	e=$?
 	cd $lastwd
+	if [ $e -ne 0 ]
+	then
+		echo 'failed to extract stage file' >&2
+		return 1
+	fi
 }
 
 # configure compile options
@@ -182,11 +208,20 @@ compileopts() {
 
 # pre-chroot
 prechroot() {
+	e=0
+
 	cp --dereference /etc/resolv.conf /mnt/gentoo/etc/
+	test $? -ne 0 && e=1
 	mount --types proc /proc $rootdir/proc
+	test $? -ne 0 && e=1
 	mount --rbind /sys $rootdir/sys
+	test $? -ne 0 && e=1
 	mount --rbind /dev $rootdir/dev
+	test $? -ne 0 && e=1
 	mount --bind /run $rootdir/run
+	test $? -ne 0 && e=1
+
+	return $e
 }
 
 # post-chroot
@@ -206,7 +241,7 @@ confptg() {
 		echo $ans | egrep -i '^no?$' >/dev/null
 		if [ $? -eq 0 ]
 		then
-			break
+			return 1
 		fi
 	done
 
@@ -230,6 +265,11 @@ settz() {
 setlocales() {
 	echo "$locales" >/etc/locale.gen
 	locale-gen
+	if [ $? -ne 0 ]
+	then
+		echo 'unable to generate locales' >&2
+		return 1
+	fi
 	echo "LANG=\"`echo "$locales" | head -n 1 | awk '{print $1}'`\"" >>/etc/env.d/02locale
 	echo "LC_COLLATE=\"C.UTF-8\"" >>/etc/env.d/02locale
 }
@@ -244,9 +284,11 @@ kernconf() {
 	echo 'sys-kernel/installkernel grub' >>/etc/portage/package.use/installkernel
 	echo 'sys-kernel/installkernel dracut' >>/etc/portage/package.use/installkernel
 	emerge sys-kernel/installkernel
+	test $? -ne 0 && return 1
 
 	# use distribution kernel
 	emerge sys-kernel/gentoo-kernel-bin
+	test $? -ne 0 && return 1
 	# skip signing (both kernel modules and kernel image)
 
 	# add dist-kernel USE flag
@@ -255,16 +297,23 @@ kernconf() {
 
 # fill /etc/fstab
 fstabconf() {
+	b=`blkid`
+	if [ $? -ne 0 ]
+	then
+		echo 'unable to retrieve partition info' >&2
+		return 1
+	fi
+
 	# add /efi
-	uuid=`blkid | grep "^$esp:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//"`
+	uuid=`echo $b | grep "^$esp:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//"`
 	printf "UUID=$uuid\t/efi\tvfat\tumask=0077\t0 2" >> /etc/fstab
 
 	# add swap
-	uuid=`blkid | grep "^$swap:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//"`
+	uuid=`echo $b | grep "^$swap:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//"`
 	printf "UUID=$uuid\tnone\tswap\tsw\t0 0" >> /etc/fstab
 
 	# add /
-	uuid=`blkid | grep "^$rootfs:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//"`
+	uuid=`echo $b | grep "^$rootfs:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//"`
 	printf "UUID=$uuid\t/\text4\tdefaults\t0 1\n" >>/etc/fstab
 }
 
@@ -273,9 +322,7 @@ netconf() {
 	echo edo-pc >/etc/hostname
 
 	# use dhcpcd instead of netifrc
-	emerge net-misc/dhcpcd
-	rc-update add dhcpcd default
-	rc-service dhcpcd start
+	emerge net-misc/dhcpcd && rc-update add dhcpcd default && rc-service dhcpcd start
 }
 
 # prompt for a new root password
@@ -293,11 +340,14 @@ openrcconf() {
 		then
 			mv /etc/rc.conf /etc/rc.conf.bk
 			cp ./rc.conf /etc
+			return 0
 		else
 			echo 'the new ./rc.conf and the old /etc/rc.conf files are identical' >&2
+			return 0
 		fi
 	else
 		echo 'rc.conf does not exist or it is not a regular file, failed to set up OpenRC' >&2
+		return 1
 	fi
 
 	# /etc/conf.d/hwclock
@@ -306,14 +356,12 @@ openrcconf() {
 
 # set up a system logger
 syslogger() {
-	emerge app-admin/sysklogd
-	rc-update add sysklogd default
+	emerge app-admin/sysklogd && rc-update add sysklogd default
 }
 
 # install a cron daemon
 crondmon() {
-	emerge sys-process/cronie
-	rc-update add cronie default
+	emerge sys-process/cronie && rc-update add cronie default
 }
 
 # add file indexing
@@ -335,8 +383,7 @@ bashcompl() {
 
 # add time synchronization
 timesync() {
-	emerge net-misc/chrony
-	rc-update add chronyd default
+	emerge net-misc/chrony && rc-update add chronyd default
 }
 
 # install the filesystem tools
@@ -358,6 +405,11 @@ bootld() {
 	# set GRUB_PLATFORMS anyway to ensure compatibility with UEFI
 	echo 'GRUB_PLATFORMS="efi-64"' >>/etc/portage/make.conf
 	emerge --verbose sys-boot/grub
+	if [ $? -ne 0 ]
+	then
+		echo 'unable to install grub' >&2
+		return 1
+	fi
 
 	# make sure that the EFI system partition is mounted before installing
 	mkdir -p /efi
