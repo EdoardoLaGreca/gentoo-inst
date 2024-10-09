@@ -325,15 +325,15 @@ fstabconf() {
 
 	# add /efi
 	uuid=`partuuid $esp`
-	printf "UUID=$uuid\t/efi\tvfat\tumask=0077\t0 2\n" >>/etc/fstab
+	printf "PARTUUID=$uuid\t/efi\tvfat\tumask=0077\t0 2\n" >>/etc/fstab
 
 	# add swap
 	uuid=`partuuid $swap`
-	printf "UUID=$uuid\tnone\tswap\tsw\t0 0\n" >>/etc/fstab
+	printf "PARTUUID=$uuid\tnone\tswap\tsw\t0 0\n" >>/etc/fstab
 
 	# add /
 	uuid=`partuuid $rootfs`
-	printf "UUID=$uuid\t/\text4\tdefaults\t0 1\n" >>/etc/fstab
+	printf "PARTUUID=$uuid\t/\text4\tdefaults\t0 1\n" >>/etc/fstab
 }
 
 # configure networking
