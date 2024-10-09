@@ -53,6 +53,8 @@ To ensure that no error occurred, the commands which run the script's parts save
 
 The new root directory, in this case  `/mnt/gentoo`, must be the same as the directoty specified by the `rootdir` variable in the installation script.
 
+If you encounter errors, refer to the [Troubleshooting](#troubleshooting) section.
+
 ### Granular running and script sourcing
 
 Thanks to the structure of the script, the user can run not only the first and second parts but also every function that the script is made of. To do so is as simple as replacing `part1` and `part2` (see the "Basic usage" section) with the name of any function, followed by its arguments.
@@ -98,6 +100,18 @@ Customization options are not provided by default, except for a few variables, f
 - The customization options I may provide, regardless of how many they are, may not be enough for the user.
 - There is a point in the process of adding customization options where the amount of code that implements those options exceeds the amount of all the other code combined. Surpassing that point is wrong.
 - Not implementing any customisation option keeps me sane.
+
+## Troubleshooting
+
+### "/etc/portage/make.profile does not exist" or similar
+
+This usually happens when Portage fails to sync. This error is usually repeated several times across `err.log` and `part2` finishes unexpectedly quickly.
+
+To solve this issue, simply run the following command until Portage successfully syncs.
+
+```
+emerge --sync
+```
 
 ## License
 
