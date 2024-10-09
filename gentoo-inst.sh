@@ -71,6 +71,12 @@ mergeuse() {
 	sed -i "s/$oldusefull/$newusefull/" $makeconf
 }
 
+# find the partition UUID of the specified partition device (e.g. /dev/sda2)
+partuuid() {
+	partdev="$1"
+	blkid | grep "^$partdev:" | grep -o 'PARTUUID=".*"' | sed 's/^PARTUUID="//;s/"$//'
+}
+
 # -- END INTERNAL FUNCTIONS -- #
 # -- BEGIN UTILITY FUNCTIONS -- #
 
@@ -318,15 +324,15 @@ fstabconf() {
 	fi
 
 	# add /efi
-	uuid=`echo $b | grep "^$esp:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//"`
-	printf "UUID=$uuid\t/efi\tvfat\tumask=0077\t0 2" >> /etc/fstab
+	uuid=`partuuid $esp`
+	printf "UUID=$uuid\t/efi\tvfat\tumask=0077\t0 2\n" >>/etc/fstab
 
 	# add swap
-	uuid=`echo $b | grep "^$swap:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//"`
-	printf "UUID=$uuid\tnone\tswap\tsw\t0 0" >> /etc/fstab
+	uuid=`partuuid $swap`
+	printf "UUID=$uuid\tnone\tswap\tsw\t0 0\n" >>/etc/fstab
 
 	# add /
-	uuid=`echo $b | grep "^$rootfs:" | awk '{ print $2 }' | sed "s/^PARTUUID=\"//;s/\"$//"`
+	uuid=`partuuid $rootfs`
 	printf "UUID=$uuid\t/\text4\tdefaults\t0 1\n" >>/etc/fstab
 }
 
