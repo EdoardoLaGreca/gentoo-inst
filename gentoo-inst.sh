@@ -492,4 +492,4 @@ rootfs="${diskdev}3"
 # for part1
 rootdir='/mnt/gentoo'
 
-$1
+"$@"
