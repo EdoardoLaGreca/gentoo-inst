@@ -29,15 +29,18 @@ Remember that you may need to **change the script's default values** before runn
 It is also recommended to check whether the specified stage file exists. This can be done by sourcing the script and using the `stageurl` function to get the complete stage file's URL. Then, the URL can be verified by using the `urlok` function, which takes that same URL as argument, prints the HTTP status code, and returns 0 if the URL is valid or 1 if it is not. The commands below include this part.
 
 ```sh
-curl -LO --max-redirs 3 https://github.com/EdoardoLaGreca/gentoo-inst.sh/raw/refs/heads/main/gentoo-inst.sh
+curl -LO --max-redirs 3 https://github.com/EdoardoLaGreca/gentoo-inst.sh/raw/refs/heads/main/{gentoo-inst.sh,rc.conf}
 vi gentoo-inst.sh		# edit default values
+. ./gentoo-inst.sh
 urlok `stageurl`
-./gentoo-inst.sh part1 2>err.log
+part1 2>err.log
 less err.log			# any error?
-mv gentoo-inst.sh /mnt/gentoo
+rm err.log
+mv gentoo-inst.sh rc.conf /mnt/gentoo
 chroot /mnt/gentoo /bin/bash
 ./gentoo-inst.sh part2 2>err.log
 less err.log			# any error?
+rm gentoo-inst.sh rc.conf err.log
 exit
 umount -R /mnt/gentoo
 reboot
