@@ -439,8 +439,7 @@ bootld() {
 	mkdir -p /efi
 	mount $esp /efi
 
-	grub-install --efi-directory=/efi
-	grub-mkconfig -o /boot/grub/grub.cfg
+	grub-install --efi-directory=/efi && grub-mkconfig -o /boot/grub/grub.cfg
 }
 
 # -- END STEP FUNCTIONS -- #
