@@ -36,6 +36,10 @@ locales='en_GB.UTF-8 UTF-8
 en_US.UTF-8 UTF-8
 it_IT.UTF-8 UTF-8'
 
+# info about new user
+username='edo'
+userfull='Edoardo La Greca'
+
 # -- BEGIN INTERNAL FUNCTIONS -- #
 
 # merge the current USE flags with another USE flag
@@ -350,12 +354,6 @@ netconf() {
 	return $e
 }
 
-# prompt for a new root password
-rootpw() {
-	# passwd
-	:
-}
-
 # set up OpenRC
 openrcconf() {
 	# /etc/rc.conf
@@ -442,6 +440,16 @@ bootld() {
 	grub-install --efi-directory=/efi && grub-mkconfig -o /boot/grub/grub.cfg
 }
 
+# prompt for a new root password
+rootpw() {
+	passwd
+}
+
+# primpt for a new user
+newusr() {
+	useradd -c "$userfull" -G 'audio,cdrom,cron,floppy,usb,video,wheel' -m -s /bin/bash $username && passwd $username
+}
+
 # -- END STEP FUNCTIONS -- #
 
 # part 1: before chroot
@@ -469,7 +477,6 @@ part2() {
 	kernconf
 	fstabconf
 	netconf
-	rootpw
 	openrcconf
 	syslogger
 	crondmon
@@ -480,6 +487,8 @@ part2() {
 	fstools
 	nettools
 	bootld
+	rootpw
+	newusr
 }
 
 # disk partitions
