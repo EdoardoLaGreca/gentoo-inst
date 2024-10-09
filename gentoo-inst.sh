@@ -341,7 +341,13 @@ netconf() {
 	echo edo-pc >/etc/hostname
 
 	# use dhcpcd instead of netifrc
-	emerge net-misc/dhcpcd && rc-update add dhcpcd default && rc-service dhcpcd start
+	# starting dhcpcd may fail as that service may already be running.
+	# this is not a problem and the exit status of this function should
+	# not be affected by it.
+	emerge net-misc/dhcpcd && rc-update add dhcpcd default
+	e=$?
+	rc-service dhcpcd start
+	return $e
 }
 
 # prompt for a new root password
