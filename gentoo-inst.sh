@@ -396,8 +396,7 @@ fileindexing() {
 
 # enable the SSH daemon
 sshdmon() {
-	#rc-update add sshd default
-	:
+	rc-update add sshd default
 }
 
 # add Bash completions
