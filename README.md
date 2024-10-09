@@ -28,8 +28,10 @@ Remember that you may need to **change the script's default values** before runn
 
 It is also recommended to check whether the specified stage file exists. This can be done by sourcing the script and using the `stageurl` function to get the complete stage file's URL. Then, the URL can be verified by using the `urlok` function, which takes that same URL as argument, prints the HTTP status code, and returns 0 if the URL is valid or 1 if it is not. The commands below include this part.
 
+Before running the following commands, make sure that the computer where the installation is about to begin does not need to be used for a while. Some installation parts, especially the kernel installation and configuration in `part2`, may take an abundant amount of time which, obviously, depends on the machine's specifications.
+
 ```sh
-curl -LO --max-redirs 3 https://github.com/EdoardoLaGreca/gentoo-inst.sh/raw/refs/heads/main/{gentoo-inst.sh,rc.conf}
+curl -LO --max-redirs 3 "https://github.com/EdoardoLaGreca/gentoo-inst.sh/raw/refs/heads/main/{gentoo-inst.sh,rc.conf}"
 vi gentoo-inst.sh		# edit default values
 . ./gentoo-inst.sh
 urlok `stageurl`
@@ -38,6 +40,7 @@ less err.log			# any error?
 rm err.log
 mv gentoo-inst.sh rc.conf /mnt/gentoo
 chroot /mnt/gentoo /bin/bash
+chmod 744 gentoo-inst.sh
 ./gentoo-inst.sh part2 2>err.log
 less err.log			# any error?
 rm gentoo-inst.sh rc.conf err.log
