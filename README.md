@@ -52,7 +52,7 @@ The new root directory, in this case  `/mnt/gentoo`, must be the same as the dir
 
 ### Granular running and script sourcing
 
-Thanks to the structure of the script, the user can run not only the first and second parts but also every function that the script is made of. To do so is as simple as replacing `part1` and `part2` (see the "Basic usage" section) with the name of any function.
+Thanks to the structure of the script, the user can run not only the first and second parts but also every function that the script is made of. To do so is as simple as replacing `part1` and `part2` (see the "Basic usage" section) with the name of any function, followed by its arguments.
 
 For example, if the user wanted to check for their internet connection and mount the root filesystem from the root partition:
 
@@ -61,7 +61,7 @@ For example, if the user wanted to check for their internet connection and mount
 ./gentoo-inst.sh mountroot
 ```
 
-Not only that, the user can source the script and run any function just by typing them, without the additional script name. The previous example can be re-written as follows:
+However, it is not possible to pass the output of a function as the argument of another one (like in `urlok \`stageurl\``) because the function producing the output, which is called before reading the script, does not exist at that time. For this reason, and for a matter of convenience, the user can source the script and run any function just by typing them, without the additional script name. The previous example can be re-written as follows:
 
 ```
 . ./gentoo-inst.sh
