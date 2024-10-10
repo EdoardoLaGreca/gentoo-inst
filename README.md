@@ -61,14 +61,14 @@ Thanks to the structure of the script, the user can run not only the first and s
 
 For example, if the user wanted to check for their internet connection and mount the root filesystem from the root partition:
 
-```
+```sh
 ./gentoo-inst.sh connok
 ./gentoo-inst.sh mountroot
 ```
 
 However, it is not possible to pass the output of a function as the argument of another one (like in `urlok \`stageurl\``) because the function producing the output, which is called before reading the script, does not exist at that time. For this reason, and for a matter of convenience, the user can source the script and run any function just by typing them, without the additional script name. The previous example can be re-written as follows:
 
-```
+```sh
 . ./gentoo-inst.sh
 connok
 mountroot
@@ -80,20 +80,20 @@ There is a little caveat, though. All functions read values from external variab
 
 The file called "packages" contains a list of packages that I usually install right after the operating system installation. The packages are separated by line breaks and they can be fed into emerge like this:
 
-```
-emerge `cat pkgs | tr '\n' ' '`
+```sh
+emerge --ask `cat pkgs | tr '\n' ' '`
 ```
 
 The file called "perma.use" contains a space-separated list of [permanent USE flags](https://wiki.gentoo.org/wiki/Handbook:AMD64/Working/USE#Declare_permanent_USE_flags) that I usually add to `/etc/portage/make.conf`. They are sorted by name for several reasons.
 
-```
+```sh
 newuse=`cat perma.use`
 echo 'USE="$USE '$newuse'"' >/etc/portage/make.conf
 ```
 
 The file called `package.use` contains [package-specific USE flags](https://wiki.gentoo.org/wiki/Handbook:AMD64/Working/USE#Declaring_USE_flags_for_individual_packages). It has the same name as the system's `/etc/portage/package.use` file and its same purpose.
 
-```
+```sh
 touch /etc/portage/package.use	# won't erase if it already exists
 cat package.use >>/etc/portage/package.use
 ```
@@ -116,7 +116,7 @@ This usually happens when Portage fails to sync. This error is usually repeated 
 
 To solve this issue, simply run the following command until Portage successfully syncs.
 
-```
+```sh
 emerge --sync
 ```
 
