@@ -51,28 +51,29 @@ userfull='Edoardo La Greca'
 # if the USE variable is not defined, define it with the given flag
 mergeuse() {
 	makeconf='/etc/portage/make.conf'
+	usere="USE=(\"|')[^[:cntrl:]]*(\"|')"
 	flag="$1"
 	mode=`echo $flag | egrep -o '^-?'`
 	flag=`echo $flag | sed "s/^$mode//"`
 
-	if ! egrep '^USE=' $makeconf
+	touch $makeconf
+	if ! egrep -q '^USE=' $makeconf
 	then
 		echo "USE=\"\"" >>$makeconf
 	fi
 
-	oldusefull=`emerge --info | egrep -o "^USE=(\"|')[^[:cntrl:]]*(\"|')"`
-	olduse=`echo $oldusefull | sed "s/^USE=//;s/'//g;s/\"//g"`
-	match=`echo "$olduse" | egrep -o "(^|[[:space:]])(-|+)?$flag([[:space:]]|$)"`
+	olduse=`tr -d \ <$makeconf | tr '\n' ' ' | sed -E 's/[[:space:]]{2,}/ /' | egrep -o "$usere" | sed "s/^USE=//;s/'//g;s/\"//g"`
+	match=`echo "$olduse" | egrep -o '(^|[[:space:]])(-|\+)?'$flag'([[:space:]]|$)'`
 
 	if [ -z "$match" ]
 	then
-		newuse="$olduse $mode$flag"
+		newuse=`echo "$olduse $mode$flag" | sed 's/^[[:space:]]*//g'`
 	else
-		newuse=`echo $olduse | sed "s/$match/$mode$flag/`
+		newuse=`echo $olduse | sed "s/$match/$mode$flag/"`
 	fi
 
 	newusefull="USE=\"$newuse\""
-	sed -i "s/$oldusefull/$newusefull/" $makeconf
+	sed -Ei "s/$usere/$newusefull/" $makeconf
 }
 
 # find the partition UUID of the specified partition device (e.g. /dev/sda2)
