@@ -84,11 +84,18 @@ The file called "packages" contains a list of packages that I usually install ri
 emerge `cat pkgs | tr '\n' ' '`
 ```
 
-The file called "usef" contains a space-separated list of USE flags that I usually add to `/etc/portage/make.conf`. They are sorted by name for several reasons.
+The file called "perma.use" contains a space-separated list of [permanent USE flags](https://wiki.gentoo.org/wiki/Handbook:AMD64/Working/USE#Declare_permanent_USE_flags) that I usually add to `/etc/portage/make.conf`. They are sorted by name for several reasons.
 
 ```
-newuse=`cat usef`
+newuse=`cat perma.use`
 echo 'USE="$USE '$newuse'"' >/etc/portage/make.conf
+```
+
+The file called `package.use` contains [package-specific USE flags](https://wiki.gentoo.org/wiki/Handbook:AMD64/Working/USE#Declaring_USE_flags_for_individual_packages). It has the same name as the system's `/etc/portage/package.use` file and its same purpose.
+
+```
+touch /etc/portage/package.use	# won't erase if it already exists
+cat package.use >>/etc/portage/package.use
 ```
 
 ## Tweaking
