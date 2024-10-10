@@ -78,13 +78,13 @@ There is a little caveat, though. All functions read values from external variab
 
 ### Additional configuration
 
-The file called "packages" contains a list of packages that I usually install right after the operating system installation. The packages are separated by line breaks and they can be fed into emerge like this:
+The file called `pkgs` contains a list of packages that I usually install right after the operating system installation. The packages are separated by line breaks and they can be fed into emerge like this:
 
 ```sh
 emerge --ask `cat pkgs | tr '\n' ' '`
 ```
 
-The file called "perma.use" contains a space-separated list of [permanent USE flags](https://wiki.gentoo.org/wiki/Handbook:AMD64/Working/USE#Declare_permanent_USE_flags) that I usually add to `/etc/portage/make.conf`. They are sorted by name for several reasons.
+The file called `perma.use` contains a space-separated list of [permanent USE flags](https://wiki.gentoo.org/wiki/Handbook:AMD64/Working/USE#Declare_permanent_USE_flags) that I usually add to `/etc/portage/make.conf`. They are sorted by name for several reasons.
 
 ```sh
 newuse=`cat perma.use`
