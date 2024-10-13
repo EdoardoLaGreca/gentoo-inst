@@ -202,7 +202,7 @@ mountroot() {
 # download and install stage file
 inststagefile() {
 	url=`stageurl`
-	curl -O $url
+	curl -O $url 2>&1
 	if [ $? -ne 0 ]
 	then
 		echo 'failed to download stage file' >&2
