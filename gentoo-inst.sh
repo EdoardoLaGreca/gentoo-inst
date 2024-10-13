@@ -256,7 +256,7 @@ postchroot() {
 
 # configure portage
 confptg() {
-	until emerge --sync --quiet
+	until emerge --sync
 	do
 		printf 'failed to sync emerge, retry? (Y/n) '
 		read ans
